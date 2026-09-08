@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from typing import Any, Dict
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
@@ -28,8 +29,7 @@ class TestResponseDecodingErrors:
         assert error.value.headers == headers
         assert error.value.message == "Failed to decode JSON response"
 
-    @pytest.mark.asyncio
-    async def test_async_preserves_status_and_headers(
+    def test_async_preserves_status_and_headers(
         self, content: bytes, status_code: int
     ) -> None:
         from resend.async_request import AsyncRequest
@@ -43,7 +43,7 @@ class TestResponseDecodingErrors:
             with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as send:
                 send.return_value = response
                 with pytest.raises(ResendError) as error:
-                    await req.perform()
+                    asyncio.run(req.perform())
 
         assert error.value.code == (status_code if status_code >= 400 else 500)
         assert error.value.headers == headers
